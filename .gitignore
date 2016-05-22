@@ -2,8 +2,6 @@
 .settings
 cmd
 Debug
-Includes
-source
 targetConfigs
 .ccsproject
 .cproject

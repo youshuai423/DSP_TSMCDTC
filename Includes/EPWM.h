@@ -14,11 +14,13 @@
 |--------------------------------------------------------------------------------------------*/
 #define period				15000  // 10KHz对应时钟数，TBCLK = SYSCLKOUT
 //#define period 37500  // 10KHz对应时钟数，TBCLK = SYSCLKOUT(for test)
+#define prediv				1  // 预分频
+#define usclk				150  // 预分频后对应的1us时钟数
 #define M				0.9  // 调制度
-#define DT				150  // 死区
-#define digit				100000
+#define DT				300   // 死区
+#define digit				100000  // 用于四舍五入
 #define HallRatioV1				135.5
-#define HallRatioV2				135
+#define HallRatioV2				135.0
 #define HallRatioC				0.74
 
 #define PWM1U_HIGH				EPwm1Regs.AQSFRC.bit.ACTSFA = AQ_SET;
@@ -49,6 +51,8 @@
 | variables
 |--------------------------------------------------------------------------------------------*/
 extern double mSample[4];
+//extern double Uab, Uca;
+extern double Uac, Uba;
 extern double Ua, Ub, Uc;
 extern double ia, ib, ic;
 extern unsigned int dutycycle;
@@ -58,7 +62,7 @@ extern unsigned int sector;
 | local functions prototypes
 |--------------------------------------------------------------------------------------------*/
 void ePWMInit(void);
-interrupt void epwm1_timer_isr(void);
+interrupt void epwm4_timer_isr(void);
 double roundn(double);  // 截断小数点后位数
 int sign(double);  // sign函数
 

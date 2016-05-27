@@ -6,7 +6,9 @@
 /******************************************************************************
 | variables
 |--------------------------------------------------------------------------------------------*/
-double mSample[4] = {0, 0, 0, 0};
+double mSample[4] = {0, 0, 0, 0};  // [0]-Uab, [1]-Uca, [2]-ia, [3]-ib
+//double Uab = 0, Uca = 0;
+double Uac = 0, Uba = 0;
 double Ua = 0, Ub = 0, Uc = 0;
 double ia = 0, ib = 0, ic = 0;
 unsigned int dutycycle = 0;
@@ -19,167 +21,128 @@ void ePWMInit() {
 
 	   EALLOW;
 
-	   GpioCtrlRegs.GPAMUX1.bit.GPIO0 = 1; // GPIO 初始化
-	   GpioCtrlRegs.GPAMUX1.bit.GPIO1 = 1;
-	   GpioCtrlRegs.GPAMUX1.bit.GPIO2 = 1;
-	   GpioCtrlRegs.GPAMUX1.bit.GPIO3 = 1;
-	   GpioCtrlRegs.GPAMUX1.bit.GPIO4 = 1;
-	   GpioCtrlRegs.GPAMUX1.bit.GPIO5 = 1;
+	   GpioCtrlRegs.GPAMUX1.bit.GPIO6 = 1; // GPIO 初始化为epwm输出
+	   GpioCtrlRegs.GPAMUX1.bit.GPIO7 = 1;
+	   GpioCtrlRegs.GPAMUX1.bit.GPIO8 = 1;
+	   GpioCtrlRegs.GPAMUX1.bit.GPIO9 = 1;
+	   GpioCtrlRegs.GPAMUX1.bit.GPIO10 = 1;
+	   GpioCtrlRegs.GPAMUX1.bit.GPIO11 = 1;
 	   //GpioCtrlRegs.GPAMUX1.bit.GPIO5 = 0;  // IO输出测试周期
 	  //GpioCtrlRegs.GPADIR.bit.GPIO5 = 1;
 
 	   EDIS;
 
-	   // ----------------EPwm1---------------------
-	   //EPwm1Regs.TBPRD = period;
-	   EPwm1Regs.TBPHS.half.TBPHS = 0;  // 时基周期寄存器
-	   EPwm1Regs.TBCTR = 0;  // 时基计数寄存器置零
-	   EPwm1Regs.TBCTL.bit.PHSDIR = TB_UP;
-	   EPwm1Regs.TBCTL.bit.CLKDIV = 0;
-	   EPwm1Regs.TBCTL.bit.HSPCLKDIV = 0;
-	   EPwm1Regs.TBCTL.bit.SYNCOSEL = TB_CTR_ZERO;
-	   //EPwm1Regs.TBCTL.bit.CTRMODE = TB_COUNT_UP;
+	   // ----------------EPwm4---------------------
+	   EPwm4Regs.TBPHS.half.TBPHS = 0;  // 时基周期寄存器
+	   EPwm4Regs.TBCTR = 0;  // 时基计数寄存器置零
+	   EPwm4Regs.TBCTL.bit.PHSDIR = TB_UP;
+	   EPwm4Regs.TBCTL.bit.CLKDIV = prediv;  // 时钟预分频
+	   EPwm4Regs.TBCTL.bit.HSPCLKDIV = 0;
+	   EPwm4Regs.TBCTL.bit.SYNCOSEL = TB_CTR_ZERO;
 
-	   EPwm1Regs.CMPA.half.CMPA = period / 2; // duty_cycle = 0.5
-	   EPwm1Regs.CMPB = period / 2;
-	   EPwm1Regs.CMPCTL.bit.SHDWAMODE = CC_SHADOW;
-	   EPwm1Regs.CMPCTL.bit.SHDWBMODE = CC_SHADOW;
-	   EPwm1Regs.CMPCTL.bit.LOADAMODE = CC_CTR_ZERO;
-	   EPwm1Regs.CMPCTL.bit.LOADBMODE = CC_CTR_ZERO;
+	   EPwm4Regs.CMPA.half.CMPA = period / 2; // duty_cycle = 0.5
+	   EPwm4Regs.CMPB = period / 2;
+	   EPwm4Regs.CMPCTL.bit.SHDWAMODE = CC_SHADOW;
+	   EPwm4Regs.CMPCTL.bit.SHDWBMODE = CC_SHADOW;
+	   EPwm4Regs.CMPCTL.bit.LOADAMODE = CC_CTR_ZERO;  // TBCTR = 0时装载
+	   EPwm4Regs.CMPCTL.bit.LOADBMODE = CC_CTR_ZERO;
 
-	   EPwm1Regs.AQCTLA.bit.CAU = AQ_TOGGLE;
-	   EPwm1Regs.AQCTLB.bit.CBU = AQ_TOGGLE;
+	   EPwm4Regs.AQCTLA.bit.CAU = AQ_TOGGLE;
+	   EPwm4Regs.AQCTLB.bit.CBU = AQ_TOGGLE;
+	   EPwm4Regs.AQCTLA.bit.PRD = AQ_CLEAR;
+	   EPwm4Regs.AQCTLB.bit.PRD = AQ_CLEAR;
 
-	   EPwm1Regs.DBCTL.bit.OUT_MODE = DB_DISABLE;
+	   EPwm4Regs.DBCTL.bit.OUT_MODE = DB_DISABLE;  // 上下不互补，死区关闭
 
-	   EPwm1Regs.ETSEL.bit.INTEN = 1;  // 使能ePWM中断
-	   EPwm1Regs.ETSEL.bit.INTSEL = ET_CTR_ZERO;
-	  // EPwm1Regs.ETPS.all = 0x00; // interrupt on first event
-	   EPwm1Regs.ETPS.bit.INTPRD = ET_1ST;
+	   EPwm4Regs.ETSEL.bit.INTEN = 1;  // 使能ePWM4中断
+	   EPwm4Regs.ETSEL.bit.INTSEL = ET_CTR_PRD;  // TBCTR = 0触发中断
+	   EPwm4Regs.ETPS.bit.INTPRD = ET_1ST;  // 每次中断都响应
 
-	   // ----------------EPwm2---------------------
-	   //EPwm2Regs.TBPRD = period;
-	   EPwm2Regs.TBPHS.half.TBPHS = 0;  // 时基周期寄存器
-	   EPwm2Regs.TBCTR = 0;  // 时基计数寄存器置零
-	   EPwm2Regs.TBCTL.bit.PHSDIR = TB_UP;
-	   EPwm2Regs.TBCTL.bit.CLKDIV = 0;
-	   EPwm2Regs.TBCTL.bit.HSPCLKDIV = 0;
-	   EPwm2Regs.TBCTL.bit.SYNCOSEL = TB_CTR_ZERO;
-	   //EPwm2Regs.TBCTL.bit.CTRMODE = TB_COUNT_UP;
+	   // ----------------EPwm5---------------------
+	   EPwm5Regs.TBPHS.half.TBPHS = 0;  // 时基周期寄存器
+	   EPwm5Regs.TBCTR = 0;  // 时基计数寄存器置零
+	   EPwm5Regs.TBCTL.bit.PHSDIR = TB_UP;
+	   EPwm5Regs.TBCTL.bit.CLKDIV = prediv;
+	   EPwm5Regs.TBCTL.bit.HSPCLKDIV = 0;
+	   EPwm5Regs.TBCTL.bit.SYNCOSEL = TB_CTR_ZERO;
 
-	   EPwm2Regs.CMPA.half.CMPA = period / 2; // duty_cycle = 0.5
-	   EPwm2Regs.CMPB = period / 2;
-	   EPwm2Regs.CMPCTL.bit.SHDWAMODE = CC_SHADOW;
-	   EPwm2Regs.CMPCTL.bit.LOADAMODE = CC_CTR_ZERO;
-	   EPwm2Regs.CMPCTL.bit.SHDWBMODE = CC_SHADOW;
-	   EPwm2Regs.CMPCTL.bit.LOADBMODE = CC_CTR_ZERO;
+	   EPwm5Regs.CMPA.half.CMPA = period / 2; // duty_cycle = 0.5
+	   EPwm5Regs.CMPB = period / 2;
+	   EPwm5Regs.CMPCTL.bit.SHDWAMODE = CC_SHADOW;
+	   EPwm5Regs.CMPCTL.bit.SHDWBMODE = CC_SHADOW;
+	   EPwm5Regs.CMPCTL.bit.LOADAMODE = CC_CTR_ZERO;
+	   EPwm5Regs.CMPCTL.bit.LOADBMODE = CC_CTR_ZERO;
 
-	   EPwm2Regs.AQCTLA.bit.CAU = AQ_TOGGLE;
-	   EPwm2Regs.AQCTLB.bit.CBU = AQ_TOGGLE;
+	   EPwm5Regs.AQCTLA.bit.CAU = AQ_TOGGLE;
+	   EPwm5Regs.AQCTLB.bit.CBU = AQ_TOGGLE;
+	   EPwm5Regs.AQCTLA.bit.PRD = AQ_CLEAR;
+	   EPwm5Regs.AQCTLB.bit.PRD = AQ_CLEAR;
 
-	   EPwm2Regs.DBCTL.bit.OUT_MODE = DB_DISABLE;
+	   EPwm5Regs.DBCTL.bit.OUT_MODE = DB_DISABLE;
 
-	   // ----------------EPwm3---------------------
-	   //EPwm3Regs.TBPRD = period;
-	   EPwm3Regs.TBPHS.half.TBPHS = 0;  // 时基周期寄存器
-	   EPwm3Regs.TBCTR = 0;  // 时基计数寄存器置零
-	   EPwm3Regs.TBCTL.bit.PHSDIR = TB_UP;
-	   EPwm3Regs.TBCTL.bit.CLKDIV = 0;
-	   EPwm3Regs.TBCTL.bit.HSPCLKDIV = 0;
-	   EPwm3Regs.TBCTL.bit.SYNCOSEL = TB_CTR_ZERO;
-	   //EPwm3Regs.TBCTL.bit.CTRMODE = TB_COUNT_UP;
+	   // ----------------EPwm6---------------------
+	   EPwm6Regs.TBPHS.half.TBPHS = 0;  // 时基周期寄存器
+	   EPwm6Regs.TBCTR = 0;  // 时基计数寄存器置零
+	   EPwm6Regs.TBCTL.bit.PHSDIR = TB_UP;
+	   EPwm6Regs.TBCTL.bit.CLKDIV = prediv;
+	   EPwm6Regs.TBCTL.bit.HSPCLKDIV = 0;
+	   EPwm6Regs.TBCTL.bit.SYNCOSEL = TB_CTR_ZERO;
 
-	   EPwm3Regs.CMPA.half.CMPA = period / 2; // duty_cycle = 0.5
-	   EPwm3Regs.CMPB = period / 2
+	   EPwm6Regs.CMPA.half.CMPA = period / 2; // duty_cycle = 0.5
+	   EPwm6Regs.CMPB = period / 2
 			   ;
-	   EPwm3Regs.CMPCTL.bit.SHDWAMODE = CC_SHADOW;
-	   EPwm3Regs.CMPCTL.bit.LOADAMODE = CC_CTR_ZERO;
-	   EPwm3Regs.CMPCTL.bit.SHDWBMODE = CC_SHADOW;
-	   EPwm3Regs.CMPCTL.bit.LOADBMODE = CC_CTR_ZERO;
+	   EPwm6Regs.CMPCTL.bit.SHDWAMODE = CC_SHADOW;
+	   EPwm6Regs.CMPCTL.bit.SHDWBMODE = CC_SHADOW;
+	   EPwm6Regs.CMPCTL.bit.LOADAMODE = CC_CTR_ZERO;
+	   EPwm6Regs.CMPCTL.bit.LOADBMODE = CC_CTR_ZERO;
 
-	   EPwm3Regs.AQCTLA.bit.CAU = AQ_TOGGLE;
-	   EPwm3Regs.AQCTLB.bit.CBU = AQ_TOGGLE;
+	   EPwm6Regs.AQCTLA.bit.CAU = AQ_TOGGLE;
+	   EPwm6Regs.AQCTLB.bit.CBU = AQ_TOGGLE;
+	   EPwm6Regs.AQCTLA.bit.PRD = AQ_CLEAR;
+	   EPwm6Regs.AQCTLB.bit.PRD = AQ_CLEAR;
 
-	   EPwm3Regs.DBCTL.bit.OUT_MODE = DB_DISABLE;
+	   EPwm6Regs.DBCTL.bit.OUT_MODE = DB_DISABLE;
 
-
-	   EPwm1Regs.TBCTL.bit.CTRMODE = TB_COUNT_UP;
-	   EPwm2Regs.TBCTL.bit.CTRMODE = TB_COUNT_UP;
-	   EPwm3Regs.TBCTL.bit.CTRMODE = TB_COUNT_UP;
-	   EPwm1Regs.TBPRD = period;
-	   EPwm2Regs.TBPRD = period;
-	   EPwm3Regs.TBPRD = period;
+	   // ----------------开始计时---------------------
+	   EPwm4Regs.TBCTL.bit.CTRMODE = TB_COUNT_UP;  // 向上计数
+	   EPwm5Regs.TBCTL.bit.CTRMODE = TB_COUNT_UP;
+	   EPwm6Regs.TBCTL.bit.CTRMODE = TB_COUNT_UP;
+	   EPwm4Regs.TBPRD = period;  // 周期设置
+	   EPwm5Regs.TBPRD = period;
+	   EPwm6Regs.TBPRD = period;
 }
 
-interrupt void epwm1_timer_isr(void)
+
+interrupt void epwm4_timer_isr(void)
 {
 	int Sa, Sb, Sc;
 
-	EPwm1Regs.AQSFRC.bit.OTSFA = 1;
-	EPwm1Regs.AQSFRC.bit.OTSFB = 1;
-	EPwm2Regs.AQSFRC.bit.OTSFA = 1;
-	EPwm2Regs.AQSFRC.bit.OTSFB = 1;
-	EPwm3Regs.AQSFRC.bit.OTSFA = 1;
-	EPwm3Regs.AQSFRC.bit.OTSFB = 1;
-	//DELAY_US(1);
+	//DELAY_US(1);  // 整流开关切换死区
 
-/*	switch (sector) {
-	case 1 : {
-		EPwm1Regs.AQSFRC.bit.ACTSFA = AQ_SET;
-		EPwm2Regs.AQSFRC.bit.ACTSFB = AQ_SET;
-		EPwm1Regs.AQSFRC.bit.OTSFA = 1;
-		EPwm2Regs.AQSFRC.bit.OTSFB = 1;
-		break;
-	}
-	case 2 : {
-		EPwm2Regs.AQSFRC.bit.ACTSFA = AQ_SET;
-		EPwm3Regs.AQSFRC.bit.ACTSFB = AQ_SET;
-		EPwm2Regs.AQSFRC.bit.OTSFA = 1;
-		EPwm3Regs.AQSFRC.bit.OTSFB = 1;
-		break;
-	}
-	case 3 : {
-		EPwm2Regs.AQSFRC.bit.ACTSFA = AQ_SET;
-		EPwm3Regs.AQSFRC.bit.ACTSFB = AQ_SET;
-		EPwm2Regs.AQSFRC.bit.OTSFA = 1;
-		EPwm3Regs.AQSFRC.bit.OTSFB = 1;
-		break;
-	}
-	case 4 : {
-		EPwm3Regs.AQSFRC.bit.ACTSFA = AQ_SET;
-		EPwm1Regs.AQSFRC.bit.ACTSFB = AQ_SET;
-		EPwm3Regs.AQSFRC.bit.OTSFA = 1;
-		EPwm1Regs.AQSFRC.bit.OTSFB = 1;
-		break;
-	}
-	case 5 : {
-		EPwm3Regs.AQSFRC.bit.ACTSFA = AQ_SET;
-		EPwm1Regs.AQSFRC.bit.ACTSFB = AQ_SET;
-		EPwm3Regs.AQSFRC.bit.OTSFA = 1;
-		EPwm1Regs.AQSFRC.bit.OTSFB = 1;
-		break;
-	}
-	default : {
-		EPwm1Regs.AQSFRC.bit.ACTSFA = AQ_SET;
-		EPwm2Regs.AQSFRC.bit.ACTSFB = AQ_SET;
-		EPwm1Regs.AQSFRC.bit.OTSFA = 1;
-		EPwm2Regs.AQSFRC.bit.OTSFB = 1;
-	}
-	}*/
+	// ----------------强制输出初始值---------------------
+	EPwm4Regs.AQSFRC.bit.OTSFA = 1;
+	EPwm4Regs.AQSFRC.bit.OTSFB = 1;
+	EPwm5Regs.AQSFRC.bit.OTSFA = 1;
+	EPwm5Regs.AQSFRC.bit.OTSFB = 1;
+	EPwm6Regs.AQSFRC.bit.OTSFA = 1;
+	EPwm6Regs.AQSFRC.bit.OTSFB = 1;
 
 	// Clear INT flag for this timer
-	EPwm1Regs.ETCLR.bit.INT = 1;
+	EPwm4Regs.ETCLR.bit.INT = 1;
 
-	//    GpioDataRegs.GPADAT.bit.GPIO5 = ~GpioDataRegs.GPADAT.bit.GPIO5;
-
+	// ----------------电压电流采样---------------------
 	ADCRDOneSpl(mSample);
-	mSample[0] *= HallRatioV1;
-	mSample[1]*= HallRatioV2;
+	//Uab = mSample[0] * HallRatioV1;
+	//Uca = mSample[1] * HallRatioV2;
+	Uac = mSample[0] * HallRatioV1;
+	Uba = mSample[1] * HallRatioV2;
 	ia = mSample[2] * HallRatioC;
 	ib = mSample[3] * HallRatioC;
 	ic = -ia - ib;
-	Ua = (mSample[0] - mSample[1]) / 3.0;
-	Ub = -(mSample[0] * 2 + mSample[1]) / 3;
+	//Ua = (Uab - Uca) / 3.0;
+	//Ub = -(Uab * 2 + Uca) / 3.0;
+	Ua = (Uac - Uba) / 3.0;
+	Ub = (Uac + 2 * Uba) / 3.0;
 	Uc = -Ua - Ub;
 
 	/* ====扇区判断====*/
@@ -187,151 +150,188 @@ interrupt void epwm1_timer_isr(void)
 	Sb = sign(Ub);
 	Sc = sign(Uc);
 
-	if (Sa && !Sb && !Sc)
+	if (Sa == 1 && Sb == 0 && Sc == 0)
 		sector = 1;
-	else if (Sa && Sb && !Sc)
+	else if (Sa == 1 && Sb == 1 && Sc == 0)
 		sector = 2;
-	else if (!Sa && Sb && !Sc)
+	else if (Sa == 0 && Sb == 1 && Sc == 0)
 		sector = 3;
-	else if (!Sa && Sb && Sc)
+	else if (Sa == 0 && Sb == 1 && Sc == 1)
 		sector = 4;
-	else if (!Sa &&! Sb && Sc)
+	else if (Sa == 0 && Sb == 0 && Sc == 1)
 		sector = 5;
-	else
+	else if (Sa == 1 && Sb == 0 && Sc == 1)
 		sector = 6;
+	else
+		sector = 0;
 
    	switch (sector)
    	{
        case 1:
        {
-    	   dutycycle = floor(-Ub / Ua * period);
+    	   dutycycle = (int)(-Ub / Ua * period);
+    	   if (dutycycle  <= usclk)
+    		   dutycycle = usclk;
 
-    	   EPwm1Regs.AQSFRC.bit.ACTSFA = AQ_SET;
-    	   EPwm1Regs.AQSFRC.bit.ACTSFB = AQ_CLEAR;
-    	   EPwm2Regs.AQSFRC.bit.ACTSFA = AQ_CLEAR;
-    	   EPwm2Regs.AQSFRC.bit.ACTSFB = AQ_SET;
-    	   EPwm3Regs.AQSFRC.bit.ACTSFA = AQ_CLEAR;
-    	   EPwm3Regs.AQSFRC.bit.ACTSFB = AQ_CLEAR;
+    	   EPwm4Regs.AQSFRC.bit.ACTSFA = AQ_SET;  // AU, BL
+    	   EPwm4Regs.AQSFRC.bit.ACTSFB = AQ_CLEAR;
+    	   EPwm5Regs.AQSFRC.bit.ACTSFA = AQ_CLEAR;
+    	   EPwm5Regs.AQSFRC.bit.ACTSFB = AQ_SET;
+    	   EPwm6Regs.AQSFRC.bit.ACTSFA = AQ_CLEAR;
+    	   EPwm6Regs.AQSFRC.bit.ACTSFB = AQ_CLEAR;
 
-    	   EPwm1Regs.CMPA.half.CMPA = period + 1;
-    	   EPwm1Regs.CMPB = period + 1;
-    	   EPwm2Regs.CMPA.half.CMPA = period + 1;
-    	   EPwm2Regs.CMPB = dutycycle;
-    	   EPwm3Regs.CMPA.half.CMPA = period + 1;
-    	   EPwm3Regs.CMPB = dutycycle + DT;  // 防止两相短路
+    	   EPwm4Regs.CMPA.half.CMPA = period + 1;  // BL CL
+    	   EPwm4Regs.CMPB = period + 1;
+    	   EPwm5Regs.CMPA.half.CMPA = period + 1;
+    	   EPwm5Regs.CMPB = dutycycle;
+    	   EPwm6Regs.CMPA.half.CMPA = period + 1;
+    	   EPwm6Regs.CMPB = dutycycle + DT;  // 防止两相短路
     	   break;
        }
 
         case 2:
         {
-     	   dutycycle = floor(-Ub / Uc * period);
+     	   dutycycle = (int)(-Ub / Uc * period);
+    	   if (dutycycle  <= usclk)
+    		   dutycycle = usclk;
 
-     	   EPwm1Regs.AQSFRC.bit.ACTSFA = AQ_CLEAR;
-     	   EPwm1Regs.AQSFRC.bit.ACTSFB = AQ_CLEAR;
-     	   EPwm2Regs.AQSFRC.bit.ACTSFA = AQ_SET;
-     	   EPwm2Regs.AQSFRC.bit.ACTSFB = AQ_CLEAR;
-     	   EPwm3Regs.AQSFRC.bit.ACTSFA = AQ_CLEAR;
-     	   EPwm3Regs.AQSFRC.bit.ACTSFB = AQ_SET;
+     	   EPwm4Regs.AQSFRC.bit.ACTSFA = AQ_CLEAR;  // BU, CL
+     	   EPwm4Regs.AQSFRC.bit.ACTSFB = AQ_CLEAR;
+     	   EPwm5Regs.AQSFRC.bit.ACTSFA = AQ_SET;
+     	   EPwm5Regs.AQSFRC.bit.ACTSFB = AQ_CLEAR;
+     	   EPwm6Regs.AQSFRC.bit.ACTSFA = AQ_CLEAR;
+     	   EPwm6Regs.AQSFRC.bit.ACTSFB = AQ_SET;
 
-     	   EPwm1Regs.CMPA.half.CMPA = dutycycle + DT;
-     	   EPwm1Regs.CMPB = period + 1;
-     	   EPwm2Regs.CMPA.half.CMPA = dutycycle;
-     	   EPwm2Regs.CMPB = period + 1;
-     	   EPwm3Regs.CMPA.half.CMPA = period + 1;
-     	   EPwm3Regs.CMPB = period + 1;
+     	   EPwm4Regs.CMPA.half.CMPA = dutycycle + DT;  //BU, AU
+     	   EPwm4Regs.CMPB = period + 1;
+     	   EPwm5Regs.CMPA.half.CMPA = dutycycle;
+     	   EPwm5Regs.CMPB = period + 1;
+     	   EPwm6Regs.CMPA.half.CMPA = period + 1;
+     	   EPwm6Regs.CMPB = period + 1;
      	   break;
         }
 
         case 3:
         {
-     	   dutycycle = floor(-Uc / Ub * period);
+     	   dutycycle = (int)(-Uc / Ub * period);
+    	   if (dutycycle  <= usclk)
+    		   dutycycle = usclk;
 
-     	   EPwm1Regs.AQSFRC.bit.ACTSFA = AQ_CLEAR;
-     	   EPwm1Regs.AQSFRC.bit.ACTSFB = AQ_CLEAR;
-     	   EPwm2Regs.AQSFRC.bit.ACTSFA = AQ_SET;
-     	   EPwm2Regs.AQSFRC.bit.ACTSFB = AQ_CLEAR;
-     	   EPwm3Regs.AQSFRC.bit.ACTSFA = AQ_CLEAR;
-     	   EPwm3Regs.AQSFRC.bit.ACTSFB = AQ_SET;
+     	   EPwm4Regs.AQSFRC.bit.ACTSFA = AQ_CLEAR;  // BU, CL
+     	   EPwm4Regs.AQSFRC.bit.ACTSFB = AQ_CLEAR;
+     	   EPwm5Regs.AQSFRC.bit.ACTSFA = AQ_SET;
+     	   EPwm5Regs.AQSFRC.bit.ACTSFB = AQ_CLEAR;
+     	   EPwm6Regs.AQSFRC.bit.ACTSFA = AQ_CLEAR;
+     	   EPwm6Regs.AQSFRC.bit.ACTSFB = AQ_SET;
 
-     	   EPwm1Regs.CMPA.half.CMPA = period + 1;
-     	   EPwm1Regs.CMPB = dutycycle + DT;
-     	   EPwm2Regs.CMPA.half.CMPA = period + 1;
-     	   EPwm2Regs.CMPB = period+1;
-     	   EPwm3Regs.CMPA.half.CMPA = period + 1;
-     	   EPwm3Regs.CMPB = dutycycle;
+     	   EPwm4Regs.CMPA.half.CMPA = period + 1;  // CL, AL
+     	   EPwm4Regs.CMPB = dutycycle + DT;
+     	   EPwm5Regs.CMPA.half.CMPA = period + 1;
+     	   EPwm5Regs.CMPB = period+1;
+     	   EPwm6Regs.CMPA.half.CMPA = period + 1;
+     	   EPwm6Regs.CMPB = dutycycle;
      	   break;
         }
         case 4:
         {
-     	   dutycycle = floor(-Uc / Ua * period);
+     	   dutycycle = (int)(-Uc / Ua * period);
+    	   if (dutycycle  <= usclk)
+    		   dutycycle = usclk;
 
-     	   EPwm1Regs.AQSFRC.bit.ACTSFA = AQ_CLEAR;
-     	   EPwm1Regs.AQSFRC.bit.ACTSFB = AQ_SET;
-     	   EPwm2Regs.AQSFRC.bit.ACTSFA = AQ_CLEAR;
-     	   EPwm2Regs.AQSFRC.bit.ACTSFB = AQ_CLEAR;
-     	   EPwm3Regs.AQSFRC.bit.ACTSFA = AQ_SET;
-     	   EPwm3Regs.AQSFRC.bit.ACTSFB = AQ_CLEAR;
+     	   EPwm4Regs.AQSFRC.bit.ACTSFA = AQ_CLEAR;  // AL, CU
+     	   EPwm4Regs.AQSFRC.bit.ACTSFB = AQ_SET;
+     	   EPwm5Regs.AQSFRC.bit.ACTSFA = AQ_CLEAR;
+     	   EPwm5Regs.AQSFRC.bit.ACTSFB = AQ_CLEAR;
+     	   EPwm6Regs.AQSFRC.bit.ACTSFA = AQ_SET;
+     	   EPwm6Regs.AQSFRC.bit.ACTSFB = AQ_CLEAR;
 
-     	   EPwm1Regs.CMPA.half.CMPA = period + 1;
-     	   EPwm1Regs.CMPB = period + 1;
-     	   EPwm2Regs.CMPA.half.CMPA = dutycycle + DT;
-     	   EPwm2Regs.CMPB = period + 1;
-     	   EPwm3Regs.CMPA.half.CMPA = dutycycle;
-     	   EPwm3Regs.CMPB = period + 1;
+     	   EPwm4Regs.CMPA.half.CMPA = period + 1;  // CU, BU
+     	   EPwm4Regs.CMPB = period + 1;
+     	   EPwm5Regs.CMPA.half.CMPA = dutycycle + DT;
+     	   EPwm5Regs.CMPB = period + 1;
+     	   EPwm6Regs.CMPA.half.CMPA = dutycycle;
+     	   EPwm6Regs.CMPB = period + 1;
      	   break;
         }
         case 5:
         {
-     	   dutycycle = floor(-Ua / Uc * period);
+     	   dutycycle = (int)(-Ua / Uc * period);
+    	   if (dutycycle  <= usclk)
+    		   dutycycle = usclk;
 
-     	   EPwm1Regs.AQSFRC.bit.ACTSFA = AQ_CLEAR;
-     	   EPwm1Regs.AQSFRC.bit.ACTSFB = AQ_SET;
-     	   EPwm2Regs.AQSFRC.bit.ACTSFA = AQ_CLEAR;
-     	   EPwm2Regs.AQSFRC.bit.ACTSFB = AQ_CLEAR;
-     	   EPwm3Regs.AQSFRC.bit.ACTSFA = AQ_SET;
-     	   EPwm3Regs.AQSFRC.bit.ACTSFB = AQ_CLEAR;
+     	   EPwm4Regs.AQSFRC.bit.ACTSFA = AQ_CLEAR;  // AL, CU
+     	   EPwm4Regs.AQSFRC.bit.ACTSFB = AQ_SET;
+     	   EPwm5Regs.AQSFRC.bit.ACTSFA = AQ_CLEAR;
+     	   EPwm5Regs.AQSFRC.bit.ACTSFB = AQ_CLEAR;
+     	   EPwm6Regs.AQSFRC.bit.ACTSFA = AQ_SET;
+     	   EPwm6Regs.AQSFRC.bit.ACTSFB = AQ_CLEAR;
 
-     	   EPwm1Regs.CMPA.half.CMPA = period + 1;
-     	   EPwm1Regs.CMPB = dutycycle;
-     	   EPwm2Regs.CMPA.half.CMPA = period + 1;
-     	   EPwm2Regs.CMPB = dutycycle + DT;
-     	   EPwm3Regs.CMPA.half.CMPA = period + 1;
-     	   EPwm3Regs.CMPB = period + 1;
+     	   EPwm4Regs.CMPA.half.CMPA = period + 1;  // AL BL
+     	   EPwm4Regs.CMPB = dutycycle;
+     	   EPwm5Regs.CMPA.half.CMPA = period + 1;
+     	   EPwm5Regs.CMPB = dutycycle + DT;
+     	   EPwm6Regs.CMPA.half.CMPA = period + 1;
+     	   EPwm6Regs.CMPB = period + 1;
      	   break;
         }
         case 6:
         {
-     	   dutycycle = floor(-Ua / Ub * period);
+     	   dutycycle = (int)(-Ua / Ub * period);
+    	   if (dutycycle  <= usclk)
+    		   dutycycle = usclk;
 
-     	   EPwm1Regs.AQSFRC.bit.ACTSFA = AQ_SET;
-     	   EPwm1Regs.AQSFRC.bit.ACTSFB = AQ_CLEAR;
-     	   EPwm2Regs.AQSFRC.bit.ACTSFA = AQ_CLEAR;
-     	   EPwm2Regs.AQSFRC.bit.ACTSFB = AQ_SET;
-     	   EPwm3Regs.AQSFRC.bit.ACTSFA = AQ_CLEAR;
-     	   EPwm3Regs.AQSFRC.bit.ACTSFB = AQ_CLEAR;
+     	   EPwm4Regs.AQSFRC.bit.ACTSFA = AQ_SET;  // AU, BL
+     	   EPwm4Regs.AQSFRC.bit.ACTSFB = AQ_CLEAR;
+     	   EPwm5Regs.AQSFRC.bit.ACTSFA = AQ_CLEAR;
+     	   EPwm5Regs.AQSFRC.bit.ACTSFB = AQ_SET;
+     	   EPwm6Regs.AQSFRC.bit.ACTSFA = AQ_CLEAR;
+     	   EPwm6Regs.AQSFRC.bit.ACTSFB = AQ_CLEAR;
 
-     	   EPwm1Regs.CMPA.half.CMPA = dutycycle;
-     	   EPwm1Regs.CMPB = period + 1;
-     	   EPwm2Regs.CMPA.half.CMPA = period + 1;
-     	   EPwm2Regs.CMPB = period + 1;
-     	   EPwm3Regs.CMPA.half.CMPA = dutycycle + DT;
-     	   EPwm3Regs.CMPB = period + 1;
+     	   EPwm4Regs.CMPA.half.CMPA = dutycycle;  // AU, CU
+     	   EPwm4Regs.CMPB = period + 1;
+     	   EPwm5Regs.CMPA.half.CMPA = period + 1;
+     	   EPwm5Regs.CMPB = period + 1;
+     	   EPwm6Regs.CMPA.half.CMPA = dutycycle + DT;
+     	   EPwm6Regs.CMPB = period + 1;
      	   break;
         }
+        default:
+        {
+      	   EPwm4Regs.AQSFRC.bit.ACTSFA = AQ_CLEAR;  // AU, BL
+      	   EPwm4Regs.AQSFRC.bit.ACTSFB = AQ_CLEAR;
+      	   EPwm5Regs.AQSFRC.bit.ACTSFA = AQ_CLEAR;
+      	   EPwm5Regs.AQSFRC.bit.ACTSFB = AQ_CLEAR;
+      	   EPwm6Regs.AQSFRC.bit.ACTSFA = AQ_CLEAR;
+      	   EPwm6Regs.AQSFRC.bit.ACTSFB = AQ_CLEAR;
+
+      	   EPwm4Regs.CMPA.half.CMPA = period + 1;  // AU, CU
+      	   EPwm4Regs.CMPB = period + 1;
+      	   EPwm5Regs.CMPA.half.CMPA = period + 1;
+      	   EPwm5Regs.CMPB = period + 1;
+      	   EPwm6Regs.CMPA.half.CMPA =  period + 1;
+      	   EPwm6Regs.CMPB = period + 1;
+        }
+
    	}
 
+/*	   EPwm4Regs.CMPA.half.CMPA = period + 1;  // AL BL
+	   EPwm4Regs.CMPB =  period + 1;
+	   EPwm5Regs.CMPA.half.CMPA = period + 1;
+	   EPwm5Regs.CMPB =  period + 1;
+	   EPwm6Regs.CMPA.half.CMPA = period + 1;
+	   EPwm6Regs.CMPB = period + 1;
+	   EPwm4Regs.AQSFRC.bit.ACTSFA = AQ_CLEAR;  // AU, BL
+	   EPwm4Regs.AQSFRC.bit.ACTSFB = AQ_CLEAR;
+	   EPwm5Regs.AQSFRC.bit.ACTSFA = AQ_CLEAR;
+	   EPwm5Regs.AQSFRC.bit.ACTSFB = AQ_SET;
+	   EPwm6Regs.AQSFRC.bit.ACTSFA = AQ_SET;
+	   EPwm6Regs.AQSFRC.bit.ACTSFB = AQ_CLEAR;*/
+
    // Clear INT flag for this timer
-    EPwm1Regs.ETCLR.bit.INT = 1;
+    EPwm4Regs.ETCLR.bit.INT = 1;
 
    // Acknowledge this interrupt to receive more interrupts from group 3
     PieCtrlRegs.PIEACK.all = PIEACK_GROUP3;
-
-/*	EPwm1Regs.AQSFRC.bit.ACTSFA = AQ_CLEAR;
-	EPwm1Regs.AQSFRC.bit.ACTSFB = AQ_CLEAR;
-	EPwm2Regs.AQSFRC.bit.ACTSFA = AQ_CLEAR;
-	EPwm2Regs.AQSFRC.bit.ACTSFB = AQ_CLEAR;
-	EPwm3Regs.AQSFRC.bit.ACTSFA = AQ_CLEAR;
-	EPwm3Regs.AQSFRC.bit.ACTSFB = AQ_CLEAR;*/
 }
 
 double roundn(double input)

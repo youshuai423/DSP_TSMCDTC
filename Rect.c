@@ -18,15 +18,15 @@ void main()
    InitPieVectTable();
 
    EALLOW;
-   PieVectTable.EPWM1_INT = &epwm1_timer_isr;  // ePWM1中断函数入口
+   PieVectTable.EPWM4_INT = &epwm4_timer_isr;  // ePWM4中断函数入口
    EDIS;
 
    ePWMInit();
    ADCInit();
    ADCRST();
 	
-   IER |= M_INT3;  // enable ePWM1 CPU_interrupt
-   PieCtrlRegs.PIEIER3.bit.INTx1 = 1;  // enable ePWM1 pie_interrupt
+   IER |= M_INT3;  // enable ePWM CPU_interrupt
+   PieCtrlRegs.PIEIER3.bit.INTx4 = 1;  // enable ePWM4 pie_interrupt
 
    EINT;   // 总中断 INTM 使能
    ERTM;   // Enable Global realtime interrupt DBGM

@@ -7,8 +7,8 @@
 | variables
 |--------------------------------------------------------------------------------------------*/
 double mSample[4] = {0, 0, 0, 0};  // [0]-Uab, [1]-Uca, [2]-ia, [3]-ib
-//double Uab = 0, Uca = 0;
-double Uac = 0, Uba = 0;
+double Uab = 0, Uca = 0;
+//double Uac = 0, Uba = 0;
 double Ua = 0, Ub = 0, Uc = 0;
 double ia = 0, ib = 0, ic = 0;
 unsigned int dutycycle = 0;
@@ -132,17 +132,17 @@ interrupt void epwm4_timer_isr(void)
 
 	// ----------------电压电流采样---------------------
 	ADCRDOneSpl(mSample);
-	//Uab = mSample[0] * HallRatioV1;
-	//Uca = mSample[1] * HallRatioV2;
-	Uac = mSample[0] * HallRatioV1;
-	Uba = mSample[1] * HallRatioV2;
+	Uab = mSample[0] * HallRatioV1;
+	Uca = mSample[1] * HallRatioV2;
+	//Uac = mSample[0] * HallRatioV1;
+	//Uba = mSample[1] * HallRatioV2;
 	ia = mSample[2] * HallRatioC;
 	ib = mSample[3] * HallRatioC;
 	ic = -ia - ib;
-	//Ua = (Uab - Uca) / 3.0;
-	//Ub = -(Uab * 2 + Uca) / 3.0;
-	Ua = (Uac - Uba) / 3.0;
-	Ub = (Uac + 2 * Uba) / 3.0;
+	Ua = (Uab - Uca) / 3.0;
+	Ub = -(Uab * 2 + Uca) / 3.0;
+	//Ua = (Uac - Uba) / 3.0;
+	//Ub = (Uac + 2 * Uba) / 3.0;
 	Uc = -Ua - Ub;
 
 	/* ====扇区判断====*/

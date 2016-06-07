@@ -51,8 +51,8 @@
 | variables
 |--------------------------------------------------------------------------------------------*/
 extern double mSample[4];
-//extern double Uab, Uca;
-extern double Uac, Uba;
+extern double Uab, Uca;
+//extern double Uac, Uba;
 extern double Ua, Ub, Uc;
 extern double ia, ib, ic;
 extern unsigned int dutycycle;

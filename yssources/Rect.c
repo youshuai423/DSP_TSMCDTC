@@ -1,7 +1,8 @@
 #include "DSP2833x_Device.h"     // DSP2833x Headerfile Include File
 #include "DSP2833x_Examples.h"   // DSP2833x Examples Include File
 #include "EPWM.h"
-#include "ADC.h"
+#include "ysPORT.h"
+//#include "ysADC.h"
 #define pi 3.1415926
 
 void main()
@@ -18,15 +19,21 @@ void main()
    InitPieVectTable();
 
    EALLOW;
-   PieVectTable.EPWM4_INT = &epwm4_timer_isr;  // ePWM4中断函数入口
+   PieVectTable.EPWM1_INT = &epwm1_timer_isr;  // ePWM1中断函数入口
    EDIS;
 
-   ePWMInit();
-   ADCInit();
-   ADCRST();
+   InitPORT();
+   InitPWM();
+   InitADC();
+   //ADCRST();
+
+/*   EALLOW;
+   GpioCtrlRegs.GPAMUX1.bit.GPIO0 = 0;
+   GpioCtrlRegs.GPADIR.bit.GPIO0 = 1;
+   EDIS;*/
 	
    IER |= M_INT3;  // enable ePWM CPU_interrupt
-   PieCtrlRegs.PIEIER3.bit.INTx4 = 1;  // enable ePWM4 pie_interrupt
+   PieCtrlRegs.PIEIER3.bit.INTx1 = 1;  // enable ePWM1 pie_interrupt
 
    EINT;   // 总中断 INTM 使能
    ERTM;   // Enable Global realtime interrupt DBGM

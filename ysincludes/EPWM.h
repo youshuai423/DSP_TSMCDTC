@@ -7,16 +7,16 @@
 #include "DSP2833x_Device.h"     // DSP2833x Headerfile Include File
 #include "DSP2833x_Examples.h"   // DSP2833x Examples Include File
 #include "math.h"
-#include "ADC.h"
+#include "ysADC.h"
+#include "imcontrol.h"
 
 /******************************************************************************
 | macros
 |--------------------------------------------------------------------------------------------*/
-#define period				15000  // 10KHz对应时钟数，TBCLK = SYSCLKOUT
-//#define period 37500  // 10KHz对应时钟数，TBCLK = SYSCLKOUT(for test)
-#define prediv				1  // 预分频
+//#define period				7500  // 10KHz对应时钟数，TBCLK = SYSCLKOUT
+#define period 15000  // 10KHz对应时钟数，TBCLK = SYSCLKOUT(for test)
+#define prediv				0  // 预分频
 #define usclk				150  // 预分频后对应的1us时钟数
-#define M				0.9  // 调制度
 #define DT				300   // 死区
 #define digit				100000  // 用于四舍五入
 #define HallRatioV1				135.5
@@ -61,9 +61,8 @@ extern unsigned int sector;
 /******************************************************************************
 | local functions prototypes
 |--------------------------------------------------------------------------------------------*/
-void ePWMInit(void);
-interrupt void epwm4_timer_isr(void);
-double roundn(double);  // 截断小数点后位数
+void InitPWM(void);
+interrupt void epwm1_timer_isr(void);
 int sign(double);  // sign函数
 
 #endif /* EPWM_H_ */

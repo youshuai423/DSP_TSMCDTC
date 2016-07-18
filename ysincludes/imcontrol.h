@@ -4,6 +4,7 @@
 #include "math.h"
 #include "DSP2833x_Device.h"     // DSP2833x Headerfile Include File
 #include "DSP2833x_Examples.h"   // DSP2833x Examples Include File
+#include "ysPWM.h"
 
 /******************************************************************************
 | defines
@@ -64,6 +65,7 @@ typedef struct
   double d,q;
 } PHASE_DQ;
 
+extern PHASE_ABC uabc;
 extern PHASE_ALBE ualbe;
 extern PHASE_ABC iabc;
 extern PHASE_ALBE ialbe;

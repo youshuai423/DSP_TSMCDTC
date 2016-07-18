@@ -96,23 +96,6 @@ void ParallelRD(double *buf, Uint16 Nospl)
 			for (i = 8; i < Nospl; i++)
 				addat[8]  = *(AD_BSTART);
 		}
-/*		addat[0]  = *(AD_ASTART);
-		addat[1]  = *(AD_ASTART);
-		addat[2]  = *(AD_ASTART);
-		addat[3]  = *(AD_ASTART);
-		addat[4]  = *(AD_ASTART);
-		addat[5]  = *(AD_ASTART);
-		addat[6]  = *(AD_ASTART);
-		addat[7]  = *(AD_ASTART);
-		//DELAY_US(1L);
-		addat[8]  = *(AD_BSTART);
-		addat[9]  = *(AD_BSTART);
-		addat[10] = *(AD_BSTART);
-		addat[11] = *(AD_BSTART);
-		addat[12] = *(AD_BSTART);
-		addat[13] = *(AD_BSTART);
-		addat[14] = *(AD_BSTART);
-		addat[15] = *(AD_BSTART);*/
 	}
 
     for(i=0; i<Nospl ;i++)

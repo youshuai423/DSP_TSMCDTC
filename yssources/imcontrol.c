@@ -7,12 +7,15 @@
 | local variable definitions                          
 |----------------------------------------------------------------------------*/
 //#define period 7500
+/*
 #define period 15000
 #define zerolimit 300
+*/
 
 /******************************************************************************
 | global variable definitions                          
 |----------------------------------------------------------------------------*/
+PHASE_ABC uabc = {0, 0, 0};
 PHASE_ALBE ualbe = {0, 0};
 PHASE_ABC iabc = {0, 0, 0};
 PHASE_ALBE ialbe = {0, 0};

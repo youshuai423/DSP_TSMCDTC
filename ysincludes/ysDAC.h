@@ -24,4 +24,4 @@
 /******************************************************************************
 | exported functions
 |----------------------------------------------------------------------------*/
-void DACout(Uint16 index, double data);
+extern void DACout(Uint16 index, double data);

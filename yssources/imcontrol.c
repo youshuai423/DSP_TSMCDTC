@@ -6,15 +6,30 @@
 /******************************************************************************
 | local variable definitions                          
 |----------------------------------------------------------------------------*/
-//#define period 7500
-/*
-#define period 15000
-#define zerolimit 300
-*/
 
 /******************************************************************************
 | global variable definitions                          
 |----------------------------------------------------------------------------*/
+Uint16 switchtable[6][6] =
+{
+	0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0
+};
+
+Uint16 vector[7][3] =
+{
+    0, 0, 0,
+    0, 0, 0,
+    0, 0, 0,
+    0, 0, 0,
+    0, 0, 0,
+    0, 0, 0,
+    0, 0, 0
+};
 PHASE_ABC uabc = {0, 0, 0};
 PHASE_ALBE ualbe = {0, 0};
 PHASE_ABC iabc = {0, 0, 0};
@@ -22,6 +37,10 @@ PHASE_ALBE ialbe = {0, 0};
 PHASE_DQ idq = {0, 0};
 PHASE_ALBE ualbe_cmd = {0, 0};
 PHASE_DQ udq_cmd = {0, 0};
+PHASE_ALBE lamdaralbe = {0, 0};
+PHASE_ALBE lamdasalbe = {0, 0};
+double Te = 0;
+double Tecmd = 0;
 double Ud = 0;
 
 double theta = 0;
@@ -35,7 +54,6 @@ double uq_Isum = 0;
 double iqset_Isum = 0;
 int period_count = 0;
 
-PHASE_ALBE lamdaralbe = {0, 0};
 double anglek = 0;
 double ualsum = 0;
 double ubesum = 0;
@@ -90,7 +108,6 @@ void R2toS2(PHASE_DQ *dq, PHASE_ALBE *albe, double theta)
 /******************************************************************************
 @brief   Rotor Flux Calculation
 ******************************************************************************/
-/* calculate lamdar */  
 double lamdarCal(double lamdar, double ism)
 {
   return (1.0 - Ts/Tr) * lamdar + Lm*Ts/Tr * ism;
@@ -105,8 +122,30 @@ void lamdaralbeCal(PHASE_ALBE ualbe, PHASE_ALBE ialbe, double *ualsum, double *u
   lamdaralbe->be = tempbe * Lr/Lm;
 }
 
-void lamdardqCal()
+/******************************************************************************
+@brief   Stator Flux Calculation
+******************************************************************************/
+void lamdasalbeCal(PHASE_ALBE ualbe, PHASE_ALBE ialbe, PHASE_ALBE *lamdasalbe)
 {
+	lamdasalbe->al = Integrator(ualbe.al - Rs * ialbe.al, lamdasalbe->al, Ts);
+	lamdasalbe->be = Integrator(ualbe.be - Rs * ialbe.be, lamdasalbe->be, Ts);
+}
+
+/******************************************************************************
+@brief   Torque Calculation
+******************************************************************************/
+void torqueCal(PHASE_ALBE lamdasalbe, PHASE_ALBE ialbe, double *Te)
+{
+	*Te = (lamdasalbe.al * ialbe.al - lamdasalbe.be * ialbe.be) * 2 / 3 * np;
+}
+
+/******************************************************************************
+@brief   Sector Calculation
+******************************************************************************/
+Uint16 sectorCal(PHASE_ALBE albe)
+{
+	Uint16 sector = 1;
+	return sector;
 }
 
 /******************************************************************************
@@ -116,6 +155,7 @@ double wrCal_M()
 {
   //unsigned int temp;
   //return 60.0 * (cntFTM1 - temp) / (Z * 0.001);
+	return 0;
 }
 
 double wrCal_T()
@@ -173,22 +213,33 @@ double positonCal(double wr, double lamdar, double ist, double theta)
 /******************************************************************************
 @brief   PI Module 
 ******************************************************************************/
-double PImodule(double Kp, double Ki, double inputk, double err, double *lasterr, double Uplim, double Downlim)
+void PImodule(double Kp, double Ki, double err, double *lasterr, double Uplim, double Downlim, double *inputk)
 {
-	inputk += Kp * (err - *lasterr) + Ki * Ts * err;
+	*inputk += Kp * (err - *lasterr) + Ki * Ts * err;
 	*lasterr = err;
 
-	if (inputk >= Downlim && inputk <= Uplim)
-		return inputk;
-	else if (inputk > Uplim)
-		return Uplim;
-	else
-		return Downlim;
+	if (*inputk > Uplim)
+		*inputk = Uplim;
+	else if (*inputk < Downlim)
+		*inputk = Downlim;
 }
 
 double Integrator(double paramin, double sum, double ts)
 {
   return paramin * ts + sum;
+}
+
+/******************************************************************************
+@brief   Hysteresis
+******************************************************************************/
+int hysteresis(double paramin, double width)
+{
+	if (paramin > width)
+		return 1;
+	else if (paramin < -width)
+		return -1;
+	else
+		return 0;
 }
 
 /******************************************************************************

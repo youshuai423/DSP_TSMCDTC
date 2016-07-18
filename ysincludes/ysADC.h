@@ -61,6 +61,6 @@
 /******************************************************************************
 | exported functions
 |----------------------------------------------------------------------------*/
-void InitADC(void);
-void SerialRD(double * buf, Uint16 Nospl);
-void ParallelRD(double * buf, Uint16 Nospl);
+extern void InitADC(void);
+extern void SerialRD(double * buf, Uint16 Nospl);
+extern void ParallelRD(double * buf, Uint16 Nospl);

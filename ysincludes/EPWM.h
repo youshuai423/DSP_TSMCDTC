@@ -16,8 +16,9 @@
 //#define period				7500  // 10KHz对应时钟数，TBCLK = SYSCLKOUT
 #define period 15000  // 10KHz对应时钟数，TBCLK = SYSCLKOUT(for test)
 #define prediv				0  // 预分频
-#define usclk				150  // 预分频后对应的1us时钟数
-#define DT				300   // 死区
+//#define limitclk				150  // 预分频后对应的1us时钟数
+#define limitclk				750  // 预分频后对应的1us时钟数
+#define DT				150   // 死区
 #define digit				100000  // 用于四舍五入
 #define HallRatioV1				135.5
 #define HallRatioV2				135.0

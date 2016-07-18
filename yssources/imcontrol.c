@@ -8,7 +8,7 @@
 |----------------------------------------------------------------------------*/
 //#define period 7500
 #define period 15000
-#define usclk 150
+#define zerolimit 300
 
 /******************************************************************************
 | global variable definitions                          
@@ -315,12 +315,12 @@ void ualbeSVM(double Ual, double Ube, double Ud, Uint16 invprd1, Uint16 invprd2,
   {
   case 1:
     {      
-      if (d0 < 0 || (invprd1 * d0 < 0.5*usclk))
+      if (d0 < 0 || (invprd1 * d0 < zerolimit))
       {
     	  double dmt = dm / (dm + dn);
-    	  Tinv1[0] = (int)(0.5 * usclk);
-    	  Tinv1[1] = (int)(0.5 * usclk) + (int)((invprd1 - usclk) * dmt);
-    	  Tinv1[2] = invprd1 - (int)(0.5 * usclk);
+    	  Tinv1[0] = zerolimit;
+    	  Tinv1[1] = zerolimit + (int)((invprd1 - 2*zerolimit) * dmt);
+    	  Tinv1[2] = invprd1 - zerolimit;
       }
       else
       {
@@ -329,178 +329,178 @@ void ualbeSVM(double Ual, double Ube, double Ud, Uint16 invprd1, Uint16 invprd2,
           Tinv1[2] = (int)(invprd1 * (dm + dn + d0));
       }
 
-      if (d0 < 0 || (invprd2 * d0 < 0.5*usclk))
+      if (d0 < 0 || (invprd2 * d0 < zerolimit))
       {
     	  double dnt = dn / (dm + dn);
-    	  Tinv2[0] = invprd1 - (int)(0.5 * usclk);
-    	  Tinv2[1] = (int)(0.5 * usclk) + (int)((invprd1 - usclk) * dnt);
-    	  Tinv2[0] = (int)(0.5 * usclk);
+    	  Tinv2[0] = invprd2 - zerolimit;
+    	  Tinv2[1] = zerolimit + (int)((invprd2 - 2*zerolimit) * dnt);
+    	  Tinv2[0] = zerolimit;
       }
       else
       {
-          Tinv2[0] = (int)floor(invprd2 * (dm + dn + d0));
-          Tinv2[1] = (int)floor(invprd2 * (dn + d0));
-          Tinv2[2] = (int)floor(invprd2 * (d0));
+          Tinv2[0] = (int)(invprd2 * (dm + dn + d0));
+          Tinv2[1] = (int)(invprd2 * (dn + d0));
+          Tinv2[2] = (int)(invprd2 * (d0));
       }
 
       break;
     }
   case 2:
     {
-      if (d0 < 0 || (invprd1 * d0 < 0.5*usclk))
+      if (d0 < 0 || (invprd1 * d0 < zerolimit))
       {
     	  double dnt = dn / (dm + dn);
-    	  Tinv1[0] = (int)(0.5 * usclk) + (int)((invprd1 - usclk) * dnt);
-      	  Tinv1[1] = (int)(0.5 * usclk);
-      	  Tinv1[2] = invprd1 - (int)(0.5 * usclk);
+    	  Tinv1[0] = zerolimit + (int)((invprd1 - 2*zerolimit) * dnt);
+      	  Tinv1[1] = zerolimit;
+      	  Tinv1[2] = invprd1 - zerolimit;
       }
       else
       {
-          Tinv1[0] = (int)floor(invprd1 * (dn + d0));
-          Tinv1[1] = (int)floor(invprd1 * (d0));
-          Tinv1[2] = (int)floor(invprd1 * (dm + dn + d0));
+          Tinv1[0] = (int)(invprd1 * (dn + d0));
+          Tinv1[1] = (int)(invprd1 * (d0));
+          Tinv1[2] = (int)(invprd1 * (dm + dn + d0));
       }
 
-      if (d0 < 0 || (invprd2 * d0 < 0.5*usclk))
+      if (d0 < 0 || (invprd2 * d0 < zerolimit))
       {
     	  double dmt = dm / (dm + dn);
-    	  Tinv2[0] = (int)(0.5 * usclk) + (int)((invprd1 - usclk) * dmt);
-    	  Tinv2[1] = invprd1 - (int)(0.5 * usclk);
-    	  Tinv2[2] = (int)(0.5 * usclk);
+    	  Tinv2[0] = zerolimit + (int)((invprd2 - 2*zerolimit) * dmt);
+    	  Tinv2[1] = invprd2 - zerolimit;
+    	  Tinv2[2] = zerolimit;
       }
       else
       {
-          Tinv2[0] = (int)floor(invprd2 * (dm + d0));
-          Tinv2[1] = (int)floor(invprd2 * (dm + dn + d0));
-          Tinv2[2] = (int)floor(invprd2 * (d0));
+          Tinv2[0] = (int)(invprd2 * (dm + d0));
+          Tinv2[1] = (int)(invprd2 * (dm + dn + d0));
+          Tinv2[2] = (int)(invprd2 * (d0));
       }
 
       break;
     }
   case 3:
     {
-      if (d0 < 0 || (invprd1 * d0 < 0.5*usclk))
+      if (d0 < 0 || (invprd1 * d0 < zerolimit))
       {
     	  double dmt = dm / (dm + dn);
-      	  Tinv1[0] = invprd1 - (int)(0.5 * usclk);
-      	  Tinv1[1] = (int)(0.5 * usclk);
-      	  Tinv1[2] = (int)(0.5 * usclk) + (int)((invprd1 - usclk) * dmt);
+      	  Tinv1[0] = invprd1 - zerolimit;
+      	  Tinv1[1] = zerolimit;
+      	  Tinv1[2] = zerolimit + (int)((invprd1 - 2*zerolimit) * dmt);
       }
       else
       {
-          Tinv1[0] = (int)floor(invprd1 * (dm + dn + d0));
-          Tinv1[1] = (int)floor(invprd1 * (d0));
-          Tinv1[2] = (int)floor(invprd1 * (dm + d0));
+          Tinv1[0] = (int)(invprd1 * (dm + dn + d0));
+          Tinv1[1] = (int)(invprd1 * (d0));
+          Tinv1[2] = (int)(invprd1 * (dm + d0));
       }
 
-      if (d0 < 0 || (invprd2 * d0 < 0.5*usclk))
+      if (d0 < 0 || (invprd2 * d0 < zerolimit))
       {
       	  double dnt = dn / (dm + dn);
-      	  Tinv2[0] = (int)(0.5 * usclk);
-      	  Tinv2[1] = invprd1 - (int)(0.5 * usclk);
-      	  Tinv2[2] = (int)(0.5 * usclk) + (int)((invprd1 - usclk) * dnt);
+      	  Tinv2[0] = zerolimit;
+      	  Tinv2[1] = invprd2 - zerolimit;
+      	  Tinv2[2] = zerolimit + (int)((invprd2 - 2*zerolimit) * dnt);
       }
       else
       {
-          Tinv2[0] = (int)floor(invprd2 * (d0));
-          Tinv2[1] = (int)floor(invprd2 * (dm + dn + d0));
-          Tinv2[2] = (int)floor(invprd2 * (dn + d0));
+          Tinv2[0] = (int)(invprd2 * (d0));
+          Tinv2[1] = (int)(invprd2 * (dm + dn + d0));
+          Tinv2[2] = (int)(invprd2 * (dn + d0));
       }
 
       break;
     }
   case 4:
     {
-      if (d0 < 0 || (invprd1 * d0 < 0.5*usclk))
+      if (d0 < 0 || (invprd1 * d0 < zerolimit))
       {
       	  double dnt = dn / (dm + dn);
-      	  Tinv1[0] = invprd1 - (int)(0.5 * usclk);
-      	  Tinv1[1] = (int)(0.5 * usclk) + (int)((invprd1 - usclk) * dnt);
-      	  Tinv1[2] = (int)(0.5 * usclk);
+      	  Tinv1[0] = invprd1 - zerolimit;
+      	  Tinv1[1] = zerolimit + (int)((invprd1 - 2*zerolimit) * dnt);
+      	  Tinv1[2] = zerolimit;
       }
       else
       {
-          Tinv1[0] = (int)floor(invprd1 * (dm + dn + d0));
-          Tinv1[1] = (int)floor(invprd1 * (dn + d0));
-          Tinv1[2] = (int)floor(invprd1 * (d0));
+          Tinv1[0] = (int)(invprd1 * (dm + dn + d0));
+          Tinv1[1] = (int)(invprd1 * (dn + d0));
+          Tinv1[2] = (int)(invprd1 * (d0));
       }
 
-      if (d0 < 0 || (invprd2 * d0 < 0.5*usclk))
+      if (d0 < 0 || (invprd2 * d0 < zerolimit))
       {
     	  double dmt = dm / (dm + dn);
-      	  Tinv2[0] = (int)(0.5 * usclk);
-      	  Tinv2[1] = (int)(0.5 * usclk) + (int)((invprd1 - usclk) * dmt);
-      	  Tinv2[2] = invprd1 - (int)(0.5 * usclk);
+      	  Tinv2[0] = zerolimit;
+      	  Tinv2[1] = zerolimit + (int)((invprd2 - 2*zerolimit) * dmt);
+      	  Tinv2[2] = invprd2 - zerolimit;
       }
       else
       {
-          Tinv2[0] = (int)floor(invprd2 * (d0));
-          Tinv2[1] = (int)floor(invprd2 * (dm + d0));
-          Tinv2[2] = (int)floor(invprd2 * (dm + dn + d0));
+          Tinv2[0] = (int)(invprd2 * (d0));
+          Tinv2[1] = (int)(invprd2 * (dm + d0));
+          Tinv2[2] = (int)(invprd2 * (dm + dn + d0));
       }
 
       break;
     }
   case 5:
     {
-      if (d0 < 0 || (invprd1 * d0 < 0.5*usclk))
+      if (d0 < 0 || (invprd1 * d0 < zerolimit))
       {
     	  double dmt = dm / (dm + dn);
-    	  Tinv1[0] = (int)(0.5 * usclk) + (int)((invprd1 - usclk) * dmt);
-    	  Tinv1[1] = invprd1 - (int)(0.5 * usclk);
-    	  Tinv1[2] = (int)(0.5 * usclk);
+    	  Tinv1[0] = zerolimit + (int)((invprd1 - 2*zerolimit) * dmt);
+    	  Tinv1[1] = invprd1 - zerolimit;
+    	  Tinv1[2] = zerolimit;
       }
       else
       {
-          Tinv1[0] = (int)floor(invprd1 * (dm + d0));
-          Tinv1[1] = (int)floor(invprd1 * (dm + dn + d0));
-          Tinv1[2] = (int)floor(invprd1 * (d0));
+          Tinv1[0] = (int)(invprd1 * (dm + d0));
+          Tinv1[1] = (int)(invprd1 * (dm + dn + d0));
+          Tinv1[2] = (int)(invprd1 * (d0));
       }
 
-      if (d0 < 0 || (invprd2 * d0 < 0.5*usclk))
+      if (d0 < 0 || (invprd2 * d0 < zerolimit))
       {
     	  double dnt = dn / (dm + dn);
-    	  Tinv2[0] = (int)(0.5 * usclk) + (int)((invprd1 - usclk) * dnt);
-    	  Tinv2[1] = (int)(0.5 * usclk);
-    	  Tinv2[2] = invprd1 - (int)(0.5 * usclk);
+    	  Tinv2[0] = zerolimit + (int)((invprd2 - 2*zerolimit) * dnt);
+    	  Tinv2[1] = zerolimit;
+    	  Tinv2[2] = invprd2 - zerolimit;
       }
       else
       {
-          Tinv2[0] = (int)floor(invprd2 * (dn + d0));
-          Tinv2[1] = (int)floor(invprd2 * (d0));
-          Tinv2[2] = (int)floor(invprd2 * (dm + dn + d0));
+          Tinv2[0] = (int)(invprd2 * (dn + d0));
+          Tinv2[1] = (int)(invprd2 * (d0));
+          Tinv2[2] = (int)(invprd2 * (dm + dn + d0));
       }
 
       break;
     }
   case 6:
     {
-      if (d0 < 0 || (invprd1 * d0 < 0.5*usclk))
+      if (d0 < 0 || (invprd1 * d0 < zerolimit))
       {
     	  double dnt = dn / (dm + dn);
-    	  Tinv1[0] = (int)(0.5 * usclk);
-    	  Tinv1[1] = invprd1 - (int)(0.5 * usclk);
-    	  Tinv1[2] = (int)(0.5 * usclk) + (int)((invprd1 - usclk) * dnt);
+    	  Tinv1[0] = zerolimit;
+    	  Tinv1[1] = invprd1 - zerolimit;
+    	  Tinv1[2] = zerolimit + (int)((invprd1 - 2*zerolimit) * dnt);
       }
       else
       {
-          Tinv1[0] = (int)floor(invprd1 * (d0));
-          Tinv1[1] = (int)floor(invprd1 * (dm + dn + d0));
-          Tinv1[2] = (int)floor(invprd1 * (dn + d0));
+          Tinv1[0] = (int)(invprd1 * (d0));
+          Tinv1[1] = (int)(invprd1 * (dm + dn + d0));
+          Tinv1[2] = (int)(invprd1 * (dn + d0));
       }
 
-      if (d0 < 0 || (invprd2 * d0 < 0.5*usclk))
+      if (d0 < 0 || (invprd2 * d0 < zerolimit))
       {
     	  double dmt = dm / (dm + dn);
-    	  Tinv2[0] = invprd1 - (int)(0.5 * usclk);
-    	  Tinv2[1] = (int)(0.5 * usclk);
-    	  Tinv2[2] = (int)(0.5 * usclk) + (int)((invprd1 - usclk) * dmt);
+    	  Tinv2[0] = invprd2 - zerolimit;
+    	  Tinv2[1] = zerolimit;
+    	  Tinv2[2] = zerolimit + (int)((invprd2 - 2*zerolimit) * dmt);
       }
       else
       {
-          Tinv2[0] = (int)floor(invprd2 * (dm + dn + d0));
-          Tinv2[1] = (int)floor(invprd2 * (d0));
-          Tinv2[2] = (int)floor(invprd2 * (dm + d0));
+          Tinv2[0] = (int)(invprd2 * (dm + dn + d0));
+          Tinv2[1] = (int)(invprd2 * (d0));
+          Tinv2[2] = (int)(invprd2 * (dm + d0));
       }
 
       break;

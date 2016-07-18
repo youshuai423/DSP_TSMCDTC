@@ -14,8 +14,8 @@ double Uab = 0, Uca = 0;
 //double Uac = 0, Uba = 0;
 double Ua = 0, Ub = 0, Uc = 0;
 double ia = 0, ib = 0, ic = 0;
-unsigned int dutycycle = 0;
-unsigned int sector = 1;
+Uint16 dutycycle = 0;
+Uint16 sector = 1;
 
 /******************************************************************************
 | functions
@@ -220,8 +220,6 @@ interrupt void epwm1_timer_isr(void)
 {
 	int Sa, Sb, Sc;
 
-	//GpioDataRegs.GPATOGGLE.bit.GPIO0 = 1;
-
 	/* 第二阶段寄存器设置， 时间 < invprd1 */
 	while(EPwm4Regs.ETFLG.bit.INT == 1)
 		EPwm4Regs.ETCLR.bit.INT = 1;
@@ -289,10 +287,10 @@ interrupt void epwm1_timer_isr(void)
        {
     	   // 防止两段时间过短
     	   dutycycle = (int)(-Ub / Ua * period);
-    	   if (dutycycle  <= usclk)
-    		   dutycycle = usclk;
-    	   else if (period - dutycycle <= usclk)
-    		   dutycycle = period - usclk;
+    	   if (dutycycle  <= limitclk)
+    		   dutycycle = limitclk;
+    	   else if (period - dutycycle <= limitclk || period <= dutycycle)
+    		   dutycycle = period - limitclk;
 
     	   EPwm1Regs.AQSFRC.bit.ACTSFA = AQ_SET;  // AU, BL
     	   EPwm1Regs.AQSFRC.bit.ACTSFB = AQ_CLEAR;
@@ -313,10 +311,10 @@ interrupt void epwm1_timer_isr(void)
         case 2:
         {
      	   dutycycle = (int)(-Ub / Uc * period);
-    	   if (dutycycle  <= usclk)
-    		   dutycycle = usclk;
-    	   else if (period - dutycycle <= usclk)
-    		   dutycycle = period - usclk;
+    	   if (dutycycle  <= limitclk)
+    		   dutycycle = limitclk;
+    	   else if (period - dutycycle <= limitclk || period <= dutycycle)
+    		   dutycycle = period - limitclk;
 
      	   EPwm1Regs.AQSFRC.bit.ACTSFA = AQ_CLEAR;  // BU, CL
      	   EPwm1Regs.AQSFRC.bit.ACTSFB = AQ_CLEAR;
@@ -337,10 +335,10 @@ interrupt void epwm1_timer_isr(void)
         case 3:
         {
      	   dutycycle = (int)(-Uc / Ub * period);
-    	   if (dutycycle  <= usclk)
-    		   dutycycle = usclk;
-    	   else if (period - dutycycle <= usclk)
-    		   dutycycle = period - usclk;
+    	   if (dutycycle  <= limitclk)
+    		   dutycycle = limitclk;
+    	   else if (period - dutycycle <= limitclk || period <= dutycycle)
+    		   dutycycle = period - limitclk;
 
      	   EPwm1Regs.AQSFRC.bit.ACTSFA = AQ_CLEAR;  // BU, CL
      	   EPwm1Regs.AQSFRC.bit.ACTSFB = AQ_CLEAR;
@@ -360,10 +358,10 @@ interrupt void epwm1_timer_isr(void)
         case 4:
         {
      	   dutycycle = (int)(-Uc / Ua * period);
-    	   if (dutycycle  <= usclk)
-    		   dutycycle = usclk;
-    	   else if (period - dutycycle <= usclk)
-    		   dutycycle = period - usclk;
+    	   if (dutycycle  <= limitclk)
+    		   dutycycle = limitclk;
+    	   else if (period - dutycycle <= limitclk || period <= dutycycle)
+    		   dutycycle = period - limitclk;
 
      	   EPwm1Regs.AQSFRC.bit.ACTSFA = AQ_CLEAR;  // AL, CU
      	   EPwm1Regs.AQSFRC.bit.ACTSFB = AQ_SET;
@@ -383,10 +381,10 @@ interrupt void epwm1_timer_isr(void)
         case 5:
         {
      	   dutycycle = (int)(-Ua / Uc * period);
-    	   if (dutycycle  <= usclk)
-    		   dutycycle = usclk;
-    	   else if (period - dutycycle <= usclk)
-    		   dutycycle = period - usclk;
+    	   if (dutycycle  <= limitclk)
+    		   dutycycle = limitclk;
+    	   else if (period - dutycycle <= limitclk || period <= dutycycle)
+    		   dutycycle = period - limitclk;
 
      	   EPwm1Regs.AQSFRC.bit.ACTSFA = AQ_CLEAR;  // AL, CU
      	   EPwm1Regs.AQSFRC.bit.ACTSFB = AQ_SET;
@@ -406,10 +404,10 @@ interrupt void epwm1_timer_isr(void)
         case 6:
         {
      	   dutycycle = (int)(-Ua / Ub * period);
-    	   if (dutycycle  <= usclk)
-    		   dutycycle = usclk;
-    	   else if (period - dutycycle <= usclk)
-    		   dutycycle = period - usclk;
+    	   if (dutycycle  <= limitclk)
+    		   dutycycle = limitclk;
+    	   else if (period - dutycycle <= limitclk || period <= dutycycle)
+    		   dutycycle = period - limitclk;
 
      	   EPwm1Regs.AQSFRC.bit.ACTSFA = AQ_SET;  // AU, BL
      	   EPwm1Regs.AQSFRC.bit.ACTSFB = AQ_CLEAR;

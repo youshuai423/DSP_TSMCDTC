@@ -102,7 +102,7 @@ interrupt void epwm1_timer_isr(void)
 	HTe = hysteresis(Tecmd - Te, 0.1);
 
 	/* table look-up */
-	index = switchtable[0][sector];
+	index = switchtable[3 * Hlamda - HTe + 1][sector - 1];
 
 	/* force out */
 	if (vector[index][0] == 0)

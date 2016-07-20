@@ -59,7 +59,7 @@
 |----------------------------------------------------------------------------*/
 extern Uint16 switchtable[6][6];
 
-extern Uint16 vector[7][3];
+extern Uint16 vector[8][3];
 
 typedef struct
 {

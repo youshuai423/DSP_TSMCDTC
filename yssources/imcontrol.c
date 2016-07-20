@@ -12,23 +12,24 @@
 |----------------------------------------------------------------------------*/
 Uint16 switchtable[6][6] =
 {
-	0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0
+	3, 4, 5, 6, 1, 2,
+	0, 7, 0, 7, 0, 7,
+	5, 6, 1, 2, 3, 4,
+	2, 3, 4, 5, 6, 1,
+	7, 0, 7, 0, 7, 0,
+	6, 1, 2, 3, 4, 5
 };
 
-Uint16 vector[7][3] =
+Uint16 vector[8][3] =
 {
-    0, 0, 0,
-    0, 0, 0,
-    0, 0, 0,
-    0, 0, 0,
-    0, 0, 0,
-    0, 0, 0,
-    0, 0, 0
+	0, 0, 0,
+    1, 0, 0,
+    1, 1, 0,
+    0, 1, 0,
+    0, 1, 1,
+    0, 0, 1,
+    1, 0, 1,
+    1, 1, 1
 };
 PHASE_ABC uabc = {0, 0, 0};
 PHASE_ALBE ualbe = {0, 0};
@@ -144,8 +145,22 @@ void torqueCal(PHASE_ALBE lamdasalbe, PHASE_ALBE ialbe, double *Te)
 ******************************************************************************/
 Uint16 sectorCal(PHASE_ALBE albe)
 {
-	Uint16 sector = 1;
-	return sector;
+	Uint16 k = albe.al / albe.be;
+
+	if (albe.al > 0 && (k > sqrt(3) || k <= -sqrt(3)))
+		return 1;
+	else if (albe.al > 0 && albe.be > 0 && k > 0 && k <= sqrt(3))
+		return 2;
+	else if (albe.al <= 0 && albe.be > 0 && k > -sqrt(3) && k <= 0)
+		return 3;
+	else if (albe.al < 0 && (k > sqrt(3) || k <= -sqrt(3)))
+		return 4;
+	else if (albe.al < 0 && albe.be < 0 && k > 0 && k <= sqrt(3))
+		return 5;
+	else if (albe.al >= 0 && albe.be < 0 && k > -sqrt(3) && k <= 0)
+		return 6;
+	else
+		return 1;
 }
 
 /******************************************************************************
